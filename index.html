@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>AP Chemistry Canvas & Problem Generator</title>
+<title>Iolani AP Chem Advanced Scratchpad</title>
 
 <!-- KaTeX Core Library -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -164,7 +164,7 @@
 <body>
 
 <div id="toolbar">
-  <span class="app-title">AP Chem Scratchpad</span>
+  <span class="app-title">AP Chem Advanced Problem Generator</span>
   
   <!-- Stopwatch Timer -->
   <div id="timer-box">
@@ -176,7 +176,7 @@
 
   <div>
     <button class="btn btn-purple" onclick="toggleDesmos()">Calculator</button>
-    <button class="btn" onclick="generateQuestion()">New Question</button>
+    <button class="btn" onclick="generateQuestion()">New Hard Problem</button>
     <button class="btn btn-clear" onclick="clearCanvas()">Clear Board</button>
   </div>
 </div>
@@ -190,11 +190,11 @@
       <div class="q-body" id="q-text">Loading problem...</div>
     </div>
 
-    <!-- AI Grading Button & Card -->
-    <button class="btn btn-purple" onclick="gradeWork()">Grade My Scratchpad Work (AP Rubric)</button>
+    <!-- Self Check Card -->
+    <button class="btn btn-purple" onclick="checkCanvasStatus()">Check My Scratchpad Setup</button>
     <div class="card" id="grading-card" style="display:none; border-color:#8b5cf6; background:#f5f3ff;">
-      <h2>Strict AP Evaluation</h2>
-      <div class="score-badge" id="grade-score">-- / 10 Points</div>
+      <h2>Scratchpad Completion Status</h2>
+      <div class="score-badge" id="grade-score">--</div>
       <div class="q-body" id="grade-feedback" style="color:#5b21b6;"></div>
     </div>
 
@@ -218,29 +218,27 @@
     <div class="canvas-tools">
       <!-- Icon-based Tool Selection -->
       <div class="tool-group">
-        <!-- Pen Icon -->
         <button class="mode-btn active" id="drawModeBtn" onclick="setToolMode('draw')" title="Pen">
           <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
         </button>
-        <!-- Eraser Icon -->
         <button class="mode-btn" id="eraseModeBtn" onclick="setToolMode('erase')" title="Eraser">
           <svg class="icon-svg" viewBox="0 0 24 24"><path d="M15.14 3c-.51 0-1.02.2-1.41.59L2.59 14.73c-.78.78-.78 2.05 0 2.83L7.44 22.4c.39.39.9.59 1.41.59H19c.55 0 1-.45 1-1s-.45-1-1-1h-6.17l8.76-8.76c.78-.78.78-2.05 0-2.83l-4.85-4.81c-.39-.39-.9-.59-1.41-.59z"/></svg>
         </button>
-        <!-- Lasso / Snake Icon -->
         <button class="mode-btn" id="lassoModeBtn" onclick="setToolMode('lasso')" title="Lasso Tool">
           <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
         </button>
       </div>
 
-      <!-- Undo / Redo -->
+      <!-- Actions -->
       <div class="tool-group">
         <button class="mode-btn" onclick="undo()" title="Undo">↶</button>
         <button class="mode-btn" onclick="redo()" title="Redo">↷</button>
+        <button class="mode-btn btn-clear" id="deleteSelectedBtn" onclick="deleteSelected()" style="display:none;" title="Delete Selected">🗑️</button>
       </div>
 
-      <!-- Zoom Reset Button -->
+      <!-- View Reset -->
       <div class="tool-group">
-        <button class="mode-btn" onclick="resetZoom()" title="Reset Zoom">100%</button>
+        <button class="mode-btn" onclick="resetView()" title="Reset View">100%</button>
       </div>
 
       <!-- Colors -->
@@ -252,7 +250,7 @@
         <input type="color" id="customColorPicker" value="#000000" onchange="setPenColor(this.value, null)" style="width:24px; height:24px; border:none; cursor:pointer;">
       </div>
 
-      <!-- Stroke Size -->
+      <!-- Line Thickness -->
       <div class="tool-group">
         <input type="range" id="lineWidth" min="1" max="20" value="3" style="width:50px;">
       </div>
@@ -272,7 +270,6 @@
 </div>
 
 <script>
-  // Canvas State & Smooth Drawing Engine
   const canvas = document.getElementById('scratchpad');
   const ctx = canvas.getContext('2d', { desynchronized: true });
   
@@ -282,12 +279,21 @@
   let isDrawing = false;
   let currentTool = 'draw';
   let penColor = '#000000';
-  let zoomScale = 1.0;
 
-  // Pinch-Zoom & Palm Rejection Variables
+  // Pan & Zoom Engine
+  let zoomScale = 1.0;
+  let panX = 0, panY = 0;
+  let isPanning = false;
+  let touchStartCenter = null;
   let initialPinchDist = null;
   let initialZoomScale = 1.0;
-  let activePencilDetected = false;
+  let initialPan = { x: 0, y: 0 };
+
+  // Lasso Engine
+  let lassoPath = [];
+  let selectedIndices = [];
+  let isDraggingSelection = false;
+  let dragStartPt = null;
 
   function resizeCanvas() {
     canvas.width = canvas.parentElement.clientWidth;
@@ -301,9 +307,11 @@
   function redrawCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
+    
+    ctx.translate(panX, panY);
     ctx.scale(zoomScale, zoomScale);
 
-    paths.forEach(p => {
+    paths.forEach((p, idx) => {
       if (!p.points || p.points.length < 1) return;
       ctx.beginPath();
       ctx.lineCap = 'round';
@@ -324,98 +332,185 @@
         ctx.lineTo(p.points[p.points.length - 1].x, p.points[p.points.length - 1].y);
         ctx.stroke();
       }
+
+      if (selectedIndices.includes(idx)) {
+        const bounds = getPathBounds(p);
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 1.5 / zoomScale;
+        ctx.strokeRect(bounds.minX - 4, bounds.minY - 4, bounds.maxX - bounds.minX + 8, bounds.maxY - bounds.minY + 8);
+        ctx.restore();
+      }
     });
+
+    if (currentTool === 'lasso' && lassoPath.length > 1) {
+      ctx.beginPath();
+      ctx.setLineDash([6, 6]);
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 2 / zoomScale;
+      ctx.moveTo(lassoPath[0].x, lassoPath[0].y);
+      for (let i = 1; i < lassoPath.length; i++) {
+        ctx.lineTo(lassoPath[i].x, lassoPath[i].y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
 
     ctx.restore();
   }
 
-  function getCanvasCoords(e) {
+  function getCanvasCoords(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
     return {
-      x: (e.clientX - rect.left) / zoomScale,
-      y: (e.clientY - rect.top) / zoomScale
+      x: (clientX - rect.left - panX) / zoomScale,
+      y: (clientY - rect.top - panY) / zoomScale
     };
   }
 
-  // Pointer & Palm Rejection Event Logic
-  function handlePointerDown(e) {
-    // Palm Rejection: Ignore touch inputs if pen is actively writing
-    if (e.pointerType === 'pen') {
-      activePencilDetected = true;
-    } else if (e.pointerType === 'touch' && activePencilDetected) {
-      return; // Reject palm touch
+  function getPathBounds(p) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    p.points.forEach(pt => {
+      if (pt.x < minX) minX = pt.x;
+      if (pt.y < minY) minY = pt.y;
+      if (pt.x > maxX) maxX = pt.x;
+      if (pt.y > maxY) maxY = pt.y;
+    });
+    return { minX, minY, maxX, maxY };
+  }
+
+  function pointInPolygon(point, vs) {
+    let x = point.x, y = point.y, inside = false;
+    for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+      let xi = vs[i].x, yi = vs[i].y;
+      let xj = vs[j].x, yj = vs[j].y;
+      let intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  // Touch & Pointer Logic
+  canvas.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'touch' && e.isPrimary === false) return;
+    
+    const pt = getCanvasCoords(e.clientX, e.clientY);
+
+    if (currentTool === 'lasso') {
+      if (selectedIndices.length > 0) {
+        isDraggingSelection = true;
+        dragStartPt = pt;
+        return;
+      }
+      lassoPath = [pt];
+      selectedIndices = [];
+      document.getElementById('deleteSelectedBtn').style.display = 'none';
+    } else {
+      selectedIndices = [];
+      document.getElementById('deleteSelectedBtn').style.display = 'none';
+      currentPath = {
+        color: penColor,
+        width: document.getElementById('lineWidth').value,
+        isEraser: currentTool === 'erase',
+        points: [pt]
+      };
+      paths.push(currentPath);
+      redoStack = [];
+    }
+    isDrawing = true;
+    redrawCanvas();
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!isDrawing && !isDraggingSelection) return;
+    const pt = getCanvasCoords(e.clientX, e.clientY);
+
+    if (isDraggingSelection && dragStartPt) {
+      const dx = pt.x - dragStartPt.x;
+      const dy = pt.y - dragStartPt.y;
+      selectedIndices.forEach(idx => {
+        paths[idx].points.forEach(p => { p.x += dx; p.y += dy; });
+      });
+      dragStartPt = pt;
+      redrawCanvas();
+      return;
     }
 
-    e.preventDefault();
-    isDrawing = true;
-    const pt = getCanvasCoords(e);
-
-    currentPath = {
-      color: penColor,
-      width: document.getElementById('lineWidth').value,
-      isEraser: currentTool === 'erase',
-      points: [pt]
-    };
-    paths.push(currentPath);
-    redoStack = [];
+    if (currentTool === 'lasso') {
+      lassoPath.push(pt);
+    } else if (currentPath) {
+      currentPath.points.push(pt);
+    }
     redrawCanvas();
-  }
+  });
 
-  function handlePointerMove(e) {
-    if (!isDrawing || !currentPath) return;
-    if (e.pointerType === 'touch' && activePencilDetected) return;
-
-    e.preventDefault();
-    const pt = getCanvasCoords(e);
-    currentPath.points.push(pt);
-    redrawCanvas();
-  }
-
-  function handlePointerUp(e) {
-    if (e.pointerType === 'pen') {
-      setTimeout(() => { activePencilDetected = false; }, 300);
+  canvas.addEventListener('pointerup', () => {
+    if (currentTool === 'lasso' && lassoPath.length > 2) {
+      selectedIndices = [];
+      paths.forEach((p, idx) => {
+        let insideCount = 0;
+        p.points.forEach(pt => {
+          if (pointInPolygon(pt, lassoPath)) insideCount++;
+        });
+        if (insideCount > p.points.length * 0.3) {
+          selectedIndices.push(idx);
+        }
+      });
+      lassoPath = [];
+      if (selectedIndices.length > 0) {
+        document.getElementById('deleteSelectedBtn').style.display = 'flex';
+      }
     }
     isDrawing = false;
+    isDraggingSelection = false;
     currentPath = null;
-  }
+    redrawCanvas();
+  });
 
-  canvas.addEventListener('pointerdown', handlePointerDown);
-  canvas.addEventListener('pointermove', handlePointerMove);
-  canvas.addEventListener('pointerup', handlePointerUp);
-  canvas.addEventListener('pointercancel', handlePointerUp);
-
-  // Two-Finger Pinch Zoom (Bounded between 0.6x and 2.5x)
+  // Notability-style Pinch Zoom & Drag Pan
   canvas.addEventListener('touchstart', (e) => {
     if (e.touches.length === 2) {
       isDrawing = false;
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      initialPinchDist = Math.hypot(dx, dy);
+      isPanning = true;
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      initialPinchDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
       initialZoomScale = zoomScale;
+      touchStartCenter = { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+      initialPan = { x: panX, y: panY };
     }
   }, { passive: false });
 
   canvas.addEventListener('touchmove', (e) => {
-    if (e.touches.length === 2 && initialPinchDist) {
+    if (e.touches.length === 2 && isPanning) {
       e.preventDefault();
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      const dist = Math.hypot(dx, dy);
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+      const center = { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+
       const factor = dist / initialPinchDist;
-      
-      // Enforce zoom boundary constraints (0.6x to 2.5x)
-      zoomScale = Math.min(Math.max(0.6, initialZoomScale * factor), 2.5);
+      zoomScale = Math.min(Math.max(0.5, initialZoomScale * factor), 3.0);
+
+      panX = initialPan.x + (center.x - touchStartCenter.x);
+      panY = initialPan.y + (center.y - touchStartCenter.y);
+
       redrawCanvas();
     }
   }, { passive: false });
 
   canvas.addEventListener('touchend', (e) => {
-    if (e.touches.length < 2) {
-      initialPinchDist = null;
-    }
+    if (e.touches.length < 2) isPanning = false;
   });
 
-  // Undo / Redo Engine
+  function deleteSelected() {
+    paths = paths.filter((_, idx) => !selectedIndices.includes(idx));
+    selectedIndices = [];
+    document.getElementById('deleteSelectedBtn').style.display = 'none';
+    redrawCanvas();
+  }
+
   function undo() {
     if (paths.length > 0) {
       redoStack.push(paths.pop());
@@ -433,11 +528,15 @@
   function clearCanvas() {
     paths = [];
     redoStack = [];
+    selectedIndices = [];
+    document.getElementById('deleteSelectedBtn').style.display = 'none';
     redrawCanvas();
   }
 
-  function resetZoom() {
+  function resetView() {
     zoomScale = 1.0;
+    panX = 0;
+    panY = 0;
     redrawCanvas();
   }
 
@@ -457,7 +556,7 @@
     }
   }
 
-  // Draggable Desmos Calculator Overlay
+  // Draggable Calculator
   const overlay = document.getElementById('desmos-overlay');
   const header = document.getElementById('desmos-header');
   let isDraggingCalc = false, calcOffsetX = 0, calcOffsetY = 0;
@@ -482,7 +581,7 @@
     overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
   }
 
-  // Stopwatch Timer
+  // Timer
   let timerInterval = null, secondsElapsed = 0;
   function updateTimerDisplay() {
     const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
@@ -508,128 +607,196 @@
     }
   }
 
-  // Question Generator
+  // ADVANCED IOLANI-LEVEL AP CHEM PROBLEM GENERATOR
   function generateQuestion() {
     document.getElementById('solution-card').style.display = 'none';
     document.getElementById('hint-card').style.display = 'none';
     document.getElementById('grading-card').style.display = 'none';
 
-    const qType = Math.floor(Math.random() * 2);
+    const qType = Math.floor(Math.random() * 4);
 
     if (qType === 0) {
-      const massOx = (Math.random() * 3 + 1.5).toFixed(2);
-      const concOx = (Math.random() * 0.06 + 0.02).toFixed(4);
-      const massK = (Math.random() * 3.5 + 3.0).toFixed(2);
-      const molesOx = (massOx * concOx).toFixed(6);
-      const molesK = (molesOx * (2 / 5)).toFixed(6);
-      const concK = (molesK / massK).toExponential(3);
+      // Redox Titration with Hydrogen Peroxide & Permanganate (Week 6 Lab Focus)
+      const volH2O2 = (Math.random() * 10 + 15).toFixed(2); // mL
+      const concKMnO4 = (Math.random() * 0.02 + 0.015).toFixed(4); // M
+      const volKMnO4 = (Math.random() * 15 + 20).toFixed(2); // mL
+      const density = 1.01; // g/mL
+      
+      const molKMnO4 = (volKMnO4 / 1000 * concKMnO4);
+      const molH2O2 = molKMnO4 * (5 / 2);
+      const massH2O2 = molH2O2 * 34.015;
+      const massSample = volH2O2 * density;
+      const massPercent = ((massH2O2 / massSample) * 100).toFixed(2);
 
-      document.getElementById('q-topic').innerText = "Redox Titration Stoichiometry";
+      document.getElementById('q-topic').innerText = "WB1 4.3: Redox Titration Lab Analysis";
       document.getElementById('q-text').innerHTML = `
-        A student titrates $${massOx}\\text{ g}$ of oxalic acid solution ($${concOx}\\text{ mol/g}$) with potassium permanganate solution according to:
-        $$\\text{2 MnO}_4^- + \\text{5 H}_2\\text{C}_2\\text{O}_4 + \\text{6 H}^+ \\rightarrow \\text{2 Mn}^{2+} + \\text{10 CO}_2 + \\text{8 H}_2\\text{O}$$
-        The equivalence point is reached after adding $${massK}\\text{ g}$ of titrant.<br><br>
-        <i>Given Molar Masses:</i> $\\text{H}_2\\text{C}_2\\text{O}_4 = 90.03\\text{ g/mol}$, $\\text{KMnO}_4 = 158.03\\text{ g/mol}$.<br><br>
-        <b>Find:</b> Concentration of the $\\text{KMnO}_4$ solution in <b>$\\text{mol/g}$</b>.
+        A $${volH2O2}\\text{ mL}$ sample of commercial hydrogen peroxide solution (density $${density}\\text{ g/mL}$) is acidified with $1.0\\text{ M H}_2\\text{SO}_4$ and titrated with $${concKMnO4}\\text{ M KMnO}_4$. The endpoint is reached when $${volKMnO4}\\text{ mL}$ of titrant is added:
+        $$\\text{2 MnO}_4^-(aq) + \\text{5 H}_2\\text{O}_2(aq) + \\text{6 H}^+(aq) \\rightarrow \\text{2 Mn}^{2+}(aq) + \\text{5 O}_2(g) + \\text{8 H}_2\\text{O}(l)$$
+        <br><b>Find:</b>
+        <br><b>(a)</b> Assign oxidation states to oxygen in $\\text{H}_2\\text{O}_2$ and $\\text{O}_2$.
+        <br><b>(b)</b> Calculate the <b>mass percent (% w/w)</b> of $\\text{H}_2\\text{O}_2$ in the original sample.
       `;
 
       document.getElementById('q-hint').innerHTML = `
-        1. Moles of oxalic acid = $\\text{mass} \\times \\text{concentration (mol/g)}$.<br>
-        2. Use stoichiometric ratio: $\\frac{2\\text{ mol MnO}_4^-}{5\\text{ mol H}_2\\text{C}_2\\text{O}_4}$.<br>
-        3. Divide moles of $\\text{MnO}_4^-$ by mass of titrant added.
+        1. Oxygen in peroxide has an unusual oxidation state of $-1$. Element $\\text{O}_2$ is $0$.<br>
+        2. Calculate moles $\\text{MnO}_4^- = \\text{Molarity} \\times \\text{Volume (L)}$.<br>
+        3. Convert moles $\\text{MnO}_4^-$ to moles $\\text{H}_2\\text{O}_2$ using ratio $\\frac{5}{2}$.<br>
+        4. Mass % = $\\frac{\\text{mass H}_2\\text{O}_2}{\\text{volume sample} \\times \\text{density}} \\times 100\\%$.
       `;
 
       document.getElementById('q-solution').innerHTML = `
-        $$\\text{Moles } \\text{H}_2\\text{C}_2\\text{O}_4 = ${massOx}\\text{ g} \\times ${concOx}\\text{ mol/g} = ${molesOx}\\text{ mol}$$
-        $$\\text{Moles } \\text{MnO}_4^- = ${molesOx}\\text{ mol} \\times \\frac{2}{5} = ${molesK}\\text{ mol}$$
-        $$\\text{Conc. } \\text{KMnO}_4 = \\frac{${molesK}\\text{ mol}}{${massK}\\text{ g}} = \\mathbf{${concK}\\text{ mol/g}}$$
+        <b>(a)</b> $\\text{Oxidation States: } \\text{H}_2\\mathbf{O}_2 = -1, \\quad \\mathbf{O}_2 = 0$<br>
+        <b>(b)</b> 
+        $$\\text{Moles MnO}_4^- = (${volKMnO4/1000}\\text{ L})(${concKMnO4}\\text{ M}) = ${molKMnO4.toExponential(3)}\\text{ mol}$$
+        $$\\text{Moles H}_2\\text{O}_2 = ${molKMnO4.toExponential(3)} \\times \\frac{5}{2} = ${molH2O2.toExponential(3)}\\text{ mol}$$
+        $$\\text{Mass H}_2\\text{O}_2 = ${molH2O2.toExponential(3)} \\times 34.015\\text{ g/mol} = ${(massH2O2).toFixed(4)}\\text{ g}$$
+        $$\\text{Mass Sample} = ${volH2O2}\\text{ mL} \\times 1.01\\text{ g/mL} = ${massSample.toFixed(2)}\\text{ g}$$
+        $$\\mathbf{\\text{Mass } \\% \\text{ H}_2\\text{O}_2} = \\frac{${(massH2O2).toFixed(4)}}{${massSample.toFixed(2)}} \\times 100 = \\mathbf{${massPercent}\\%}$$
       `;
+
+    } else if (qType === 1) {
+      // Coupled Reaction & Multi-Step Back Titration (Redox / Iodometry)
+      const massImpure = (Math.random() * 0.4 + 0.3).toFixed(3); // g sample containing Cu2+
+      const volThio = (Math.random() * 10 + 20).toFixed(2); // mL
+      const concThio = (Math.random() * 0.05 + 0.08).toFixed(4); // M
+      
+      const molThio = (volThio / 1000 * concThio);
+      const molI2 = molThio / 2;
+      const molCu = molI2 * 2;
+      const massCu = molCu * 63.55;
+      const purity = ((massCu / massImpure) * 100).toFixed(2);
+
+      document.getElementById('q-topic').innerText = "WB1 4.7/4.8: Multi-Step Coupled Redox Titration";
+      document.getElementById('q-text').innerHTML = `
+        A $${massImpure}\\text{ g}$ sample of impure copper ore is dissolved to produce $\\text{Cu}^{2+}(aq)$. Excess $\\text{KI}$ is added, generating iodine via reaction (1):
+        $$\\text{(1) } 2\\text{Cu}^{2+}(aq) + 4\\text{I}^-(aq) \\rightarrow 2\\text{CuI}(s) + \\text{I}_2(aq)$$
+        The liberated $\\text{I}_2$ is titrated with sodium thiosulfate ($\\text{Na}_2\\text{S}_2\\text{O}_3$) via reaction (2):
+        $$\\text{(2) } \\text{I}_2(aq) + 2\\text{S}_2\\text{O}_3^{2-}(aq) \\rightarrow 2\\text{I}^-(aq) + \\text{S}_4\\text{O}_6^{2-}(aq)$$
+        The endpoint requires $${volThio}\\text{ mL}$ of $${concThio}\\text{ M Na}_2\\text{S}_2\\text{O}_3$.<br><br>
+        <b>Find:</b> The mass percent (% w/w) of pure $\\text{Cu}$ in the original ore sample.
+      `;
+
+      document.getElementById('q-hint').innerHTML = `
+        1. Moles $\\text{S}_2\\text{O}_3^{2-} = M \\times V$.<br>
+        2. Stoichiometric path: $2\\text{ mol S}_2\\text{O}_3^{2-} \\rightarrow 1\\text{ mol I}_2 \\rightarrow 2\\text{ mol Cu}^{2+}$.<br>
+        3. Compute mass of $\\text{Cu}$ ($63.55\\text{ g/mol}$) and divide by sample mass.
+      `;
+
+      document.getElementById('q-solution').innerHTML = `
+        $$\\text{Moles S}_2\\text{O}_3^{2-} = (${volThio/1000}\\text{ L})(${concThio}\\text{ M}) = ${molThio.toExponential(3)}\\text{ mol}$$
+        $$\\text{Moles I}_2 = ${molThio.toExponential(3)} \\times \\frac{1}{2} = ${molI2.toExponential(3)}\\text{ mol}$$
+        $$\\text{Moles Cu}^{2+} = ${molI2.toExponential(3)} \\times 2 = ${molCu.toExponential(3)}\\text{ mol}$$
+        $$\\text{Mass Cu} = ${molCu.toExponential(3)} \\times 63.55\\text{ g/mol} = ${massCu.toFixed(4)}\\text{ g}$$
+        $$\\mathbf{\\text{Percent Purity}} = \\frac{${massCu.toFixed(4)}}{${massImpure}} \\times 100 = \\mathbf{${purity}\\%}$$
+      `;
+
+    } else if (qType === 2) {
+      // Hard Limiting & Excess Reactants with Precipitation / Net Ionic
+      const volBaCl2 = Math.floor(Math.random() * 50 + 100); // mL
+      const concBaCl2 = (Math.random() * 0.2 + 0.15).toFixed(3); // M
+      const volNa3PO4 = Math.floor(Math.random() * 50 + 80); // mL
+      const concNa3PO4 = (Math.random() * 0.2 + 0.1).toFixed(3); // M
+
+      const molBa = (volBaCl2 / 1000) * concBaCl2;
+      const molPO4 = (volNa3PO4 / 1000) * concNa3PO4;
+
+      const baNeeded = molPO4 * (3 / 2);
+      const isBaLimiting = molBa < baNeeded;
+
+      const molPpt = isBaLimiting ? (molBa / 3) : (molPO4 / 2);
+      const massPpt = (molPpt * 601.93).toFixed(2); // Ba3(PO4)2 molar mass = 601.93
+
+      const totalVolL = (volBaCl2 + volNa3PO4) / 1000;
+      let excessIon, excessConc;
+
+      if (isBaLimiting) {
+        excessIon = "\\text{PO}_4^{3-}";
+        const molPO4Used = molBa * (2 / 3);
+        const molPO4Rem = molPO4 - molPO4Used;
+        excessConc = (molPO4Rem / totalVolL).toFixed(4);
+      } else {
+        excessIon = "\\text{Ba}^{2+}";
+        const molBaUsed = molPO4 * (3 / 2);
+        const molBaRem = molBa - molBaUsed;
+        excessConc = (molBaRem / totalVolL).toFixed(4);
+      }
+
+      document.getElementById('q-topic').innerText = "WB1 4.8: Limiting Reactant & Remaining Ions";
+      document.getElementById('q-text').innerHTML = `
+        $${volBaCl2}\\text{ mL}$ of $${concBaCl2}\\text{ M BaCl}_2$ is mixed with $${volNa3PO4}\\text{ mL}$ of $${concNa3PO4}\\text{ M Na}_3\\text{PO}_4$. A precipitate forms:
+        $$\\text{3 Ba}^{2+}(aq) + \\text{2 PO}_4^{3-}(aq) \\rightarrow \\text{Ba}_3(\\text{PO}_4)_2(s)$$
+        <br><b>Find:</b>
+        <br><b>(a)</b> Theoretical yield mass of $\\text{Ba}_3(\\text{PO}_4)_2(s)$ ($601.93\\text{ g/mol}$).
+        <br><b>(b)</b> Concentration of excess reactive ion ($ ${excessIon} $) remaining in solution.
+      `;
+
+      document.getElementById('q-hint').innerHTML = `
+        1. Calculate moles $\\text{Ba}^{2+} = M_1 V_1$ and moles $\\text{PO}_4^{3-} = M_2 V_2$.<br>
+        2. Mole ratio is $3\\text{ Ba}^{2+} : 2\\text{ PO}_4^{3-}$. Compare to find the limiting reactant.<br>
+        3. Subtract used moles from initial moles for excess reactant.<br>
+        4. Divide remaining moles by total combined solution volume ($V_1 + V_2$).
+      `;
+
+      document.getElementById('q-solution').innerHTML = `
+        $$\\text{Moles Ba}^{2+} = ${molBa.toFixed(4)}\\text{ mol}, \\quad \\text{Moles PO}_4^{3-} = ${molPO4.toFixed(4)}\\text{ mol}$$
+        $$\\text{Limiting Reactant: } \\mathbf{${isBaLimiting ? '\\text{Ba}^{2+}' : '\\text{PO}_4^{3-}'}}$$
+        $$\\text{Mass Ba}_3(\\text{PO}_4)_2 = ${molPpt.toFixed(4)}\\text{ mol} \\times 601.93\\text{ g/mol} = \\mathbf{${massPpt}\\text{ g}}$$
+        $$\\text{Remaining Concentration } [${excessIon}] = \\frac{\\text{Moles Excess}}{\\text{Total Volume (${totalVolL}\\text{ L})}} = \\mathbf{${excessConc}\\text{ M}}$$
+      `;
+
     } else {
-      const massZn = (Math.random() * 6 + 2).toFixed(2);
-      const volHCl = Math.floor(Math.random() * 150 + 50);
-      const concHCl = (Math.random() * 2 + 0.5).toFixed(2);
+      // Percent Purity and Gas Stoichiometry
+      const massImpure = (Math.random() * 2 + 3).toFixed(2); // g CaCO3
+      const volumeCO2 = (Math.random() * 0.4 + 0.4).toFixed(3); // L
+      const tempC = 25;
+      const pressureAtm = 1.00;
+      
+      const molesCO2 = (pressureAtm * volumeCO2) / (0.08206 * 298.15);
+      const molesCaCO3 = molesCO2;
+      const massCaCO3 = molesCaCO3 * 100.09;
+      const percentPurity = ((massCaCO3 / massImpure) * 100).toFixed(2);
 
-      const molesZn = (massZn / 65.38).toFixed(4);
-      const molesHCl = ((volHCl / 1000) * concHCl).toFixed(4);
-      const hclNeeded = (2 * molesZn).toFixed(4);
-
-      const limiting = parseFloat(molesHCl) < parseFloat(hclNeeded) ? "\\text{HCl}" : "\\text{Zn}";
-      const molesH2 = limiting === "\\text{HCl}" ? (molesHCl / 2).toFixed(4) : molesZn;
-      const massH2 = (2.016 * molesH2).toFixed(3);
-
-      document.getElementById('q-topic').innerText = "Limiting Reactant & Stoichiometry";
+      document.getElementById('q-topic').innerText = "WB1 4.7/4.8: Percent Purity & Gas Stoichiometry";
       document.getElementById('q-text').innerHTML = `
-        $${massZn}\\text{ g}$ of zinc metal react with $${volHCl}\\text{ mL}$ of $${concHCl}\\text{ M}$ hydrochloric acid:
-        $$\\text{Zn}(s) + 2\\text{H}^+(aq) \\rightarrow \\text{Zn}^{2+}(aq) + \\text{H}_2(g)$$
-        <i>Given Molar Masses:</i> $\\text{Zn} = 65.38\\text{ g/mol}$, $\\text{HCl} = 36.46\\text{ g/mol}$, $\\text{H}_2 = 2.016\\text{ g/mol}$.<br><br>
-        <b>Find:</b><br>
-        1. Identify the limiting reactant.<br>
-        2. Calculate theoretical mass of $\\text{H}_2(g)$ produced.
+        A $${massImpure}\\text{ g}$ sample of limestone containing $\\text{CaCO}_3$ and inert impurities is treated with excess $\\text{HCl}(aq)$:
+        $$\\text{CaCO}_3(s) + 2\\text{H}^+(aq) \\rightarrow \\text{Ca}^{2+}(aq) + \\text{H}_2\\text{O}(l) + \\text{CO}_2(g)$$
+        The dry $\\text{CO}_2(g)$ collected occupies $${volumeCO2}\\text{ L}$ at $1.00\\text{ atm}$ and $25.0^\\circ\\text{C}$.<br><br>
+        <i>Given:</i> $R = 0.08206\\text{ L}\\cdot\\text{atm}/(\\text{mol}\\cdot\\text{K})$, Molar mass $\\text{CaCO}_3 = 100.09\\text{ g/mol}$.<br><br>
+        <b>Find:</b> The <b>percent purity (% w/w)</b> of $\\text{CaCO}_3$ in the limestone sample.
       `;
 
       document.getElementById('q-hint').innerHTML = `
-        1. Moles $\\text{Zn} = \\frac{\\text{mass}}{65.38\\text{ g/mol}}$. Moles $\\text{HCl} = \\text{Molarity} \\times \\text{Volume (L)}$.<br>
-        2. Compare stoichiometry ($1\\text{ mol Zn}$ requires $2\\text{ mol H}^+$).<br>
-        3. Multiply limiting moles by $2.016\\text{ g/mol}$ to find mass of $\\text{H}_2$.
+        1. Calculate moles of $\\text{CO}_2$ using Ideal Gas Law: $n = \\frac{PV}{RT}$. ($T = 298.15\\text{ K}$).<br>
+        2. Mole ratio is $1\\text{ mol CaCO}_3 : 1\\text{ mol CO}_2$.<br>
+        3. Mass pure $\\text{CaCO}_3 = n \\times 100.09\\text{ g/mol}$.<br>
+        4. Percent Purity = $\\frac{\\text{Mass pure}}{\\text{Mass sample}} \\times 100\\%$.
       `;
 
       document.getElementById('q-solution').innerHTML = `
-        $$\\text{Moles Zn} = \\frac{${massZn}\\text{ g}}{65.38\\text{ g/mol}} = ${molesZn}\\text{ mol}$$
-        $$\\text{Moles HCl} = ${volHCl/1000}\\text{ L} \\times ${concHCl}\\text{ M} = ${molesHCl}\\text{ mol}$$
-        $$\\text{Limiting Reactant: } \\mathbf{${limiting}}$$
-        $$\\text{Mass H}_2 = ${molesH2}\\text{ mol} \\times 2.016\\text{ g/mol} = \\mathbf{${massH2}\\text{ g}}$$
+        $$n_{\\text{CO}_2} = \\frac{(1.00\\text{ atm})(${volumeCO2}\\text{ L})}{(0.08206)(298.15\\text{ K})} = ${molesCO2.toFixed(4)}\\text{ mol}$$
+        $$\\text{Mass Pure CaCO}_3 = ${molesCO2.toFixed(4)}\\text{ mol} \\times 100.09\\text{ g/mol} = ${massCaCO3.toFixed(3)}\\text{ g}$$
+        $$\\mathbf{\\text{Percent Purity}} = \\frac{${massCaCO3.toFixed(3)}}{${massImpure}} \\times 100 = \\mathbf{${percentPurity}\\%}$$
       `;
     }
 
     setTimeout(triggerKaTeX, 100);
   }
 
-  // Strict AP Rubric AI Grading Feature
-  function gradeWork() {
+  function checkCanvasStatus() {
     const card = document.getElementById('grading-card');
     const scoreBox = document.getElementById('grade-score');
     const feedbackBox = document.getElementById('grade-feedback');
     card.style.display = 'block';
 
     if (paths.length === 0) {
-      scoreBox.innerText = "0 / 10 Points";
+      scoreBox.innerText = "Scratchpad Empty";
       scoreBox.style.color = "#dc2626";
-      feedbackBox.innerHTML = "<b>[AP Rubric Violation] No Scratchpad Work Present:</b><br>You must write out your dimensional analysis, mole conversions, and units on the scratchpad canvas to receive credit.";
-      return;
+      feedbackBox.innerHTML = "<b>No work detected:</b> Write out your dimensional analysis, mole conversions, and units on the canvas before verifying your final answer with the step-by-step solution card.";
+    } else {
+      scoreBox.innerText = "Work Active";
+      scoreBox.style.color = "#16a34a";
+      feedbackBox.innerHTML = `<b>Work detected (${paths.length} strokes recorded):</b> Make sure you included explicit units ($\g$, $\\text{mol}$, $\\text{M}$) and significant figures in your final answer before opening the solution key!`;
     }
-
-    if (paths.length < 5) {
-      scoreBox.innerText = "3 / 10 Points";
-      scoreBox.style.color = "#dc2626";
-      feedbackBox.innerHTML = `
-        <b>[AP Rubric Penalty] Incomplete Setup & Work:</b><br>
-        • <b>Setup (1/4 pts):</b> Minimal writing detected. Full conversion factors are missing.<br>
-        • <b>Units & Sig Figs (1/3 pts):</b> Units (g, mol, M) are missing from intermediate steps.<br>
-        • <b>Answer (1/3 pts):</b> Final boxed numerical output is incomplete or unsupported by setup.
-      `;
-      return;
-    }
-
-    if (paths.length < 12) {
-      scoreBox.innerText = "6 / 10 Points";
-      scoreBox.style.color = "#d97706";
-      feedbackBox.innerHTML = `
-        <b>[AP Rubric Evaluation] Partial Credit:</b><br>
-        • <b>Setup (3/4 pts):</b> Conversion factors present, but missing clear dimensional cancellation labels.<br>
-        • <b>Units & Sig Figs (2/3 pts):</b> Ensure all molar masses include 'g/mol' units explicit in every step.<br>
-        • <b>Answer (1/3 pts):</b> Check final rounding against 3 significant figures.
-      `;
-      return;
-    }
-
-    scoreBox.innerText = "9 / 10 Points";
-    scoreBox.style.color = "#16a34a";
-    feedbackBox.innerHTML = `
-      <b>[AP Rubric Evaluation] High Credit:</b><br>
-      • <b>Setup (4/4 pts):</b> Clear stoichiometric mole ratios and dimensional setups written out.<br>
-      • <b>Units & Sig Figs (3/3 pts):</b> Molar mass units and state labels identified correctly.<br>
-      • <b>Answer (2/3 pts):</b> Verify final numerical decimal place rounding against step-by-step key.
-    `;
   }
 
   function toggleHint() {
@@ -643,9 +810,7 @@
   }
 
   window.onload = function() {
-    setTimeout(() => {
-      generateQuestion();
-    }, 300);
+    setTimeout(() => { generateQuestion(); }, 300);
   };
 </script>
 </body>
