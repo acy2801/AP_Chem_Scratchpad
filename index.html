@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AP Chemistry Canvas & Problem Generator</title>
+
+<!-- KaTeX Core Library -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400..700;1,400..700&display=swap');
+
+  * { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    font-size: 18px;
+  }
+
+  /* Top Control Bar */
+  #toolbar {
+    background: #0f172a;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    z-index: 10;
+  }
+  .app-title { font-size: 20px; font-weight: 700; font-family: 'STIX Two Text', serif; }
+  
+  /* Stopwatch Timer */
+  #timer-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1e293b;
+    padding: 4px 12px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+  }
+  #timer-display { font-family: monospace; font-size: 20px; font-weight: bold; color: #38bdf8; width: 75px; }
+
+  .btn {
+    background: #2563eb; color: white; border: none; padding: 8px 14px;
+    border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.15s;
+  }
+  .btn:hover { opacity: 0.9; }
+  .btn-green { background: #10b981; }
+  .btn-amber { background: #f59e0b; }
+  .btn-purple { background: #8b5cf6; }
+  .btn-clear { background: #ef4444; }
+  .btn-sm { padding: 4px 8px; font-size: 12px; }
+
+  /* Main Layout */
+  #main-container { display: flex; flex: 1; height: calc(100vh - 60px); position: relative; }
+
+  /* Question Sidebar */
+  #question-panel {
+    width: 42%;
+    background: #ffffff;
+    padding: 20px;
+    border-right: 2px solid #cbd5e1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .card {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .badge {
+    display: inline-block; padding: 4px 10px; border-radius: 6px;
+    font-size: 13px; font-weight: 700; background: #e0e7ff; color: #3730a3; margin-bottom: 8px;
+  }
+  h2 { font-size: 18px; color: #0f172a; margin-bottom: 8px; }
+  .q-body { font-size: 18px; line-height: 1.5; color: #1e293b; font-family: 'STIX Two Text', serif; }
+
+  /* Interactive Canvas Area */
+  #canvas-container { width: 58%; position: relative; background: #ffffff; touch-action: none; overflow: hidden; }
+  canvas { width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none; }
+
+  /* Canvas Toolbar */
+  .canvas-tools {
+    position: absolute; top: 10px; right: 10px;
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 6px 12px; border-radius: 8px;
+    border: 1px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    z-index: 5;
+  }
+  .tool-group { display: flex; align-items: center; gap: 6px; }
+  .color-btn {
+    width: 22px; height: 22px; border-radius: 50%; border: 2px solid #94a3b8; cursor: pointer;
+  }
+  .color-btn.active { border-color: #0284c7; transform: scale(1.15); }
+  .mode-btn { 
+    background: #f1f5f9; color: #334155; border: 1px solid #94a3b8; 
+    padding: 6px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; 
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .mode-btn.active { background: #0284c7; color: white; border-color: #0284c7; }
+  .icon-svg { width: 18px; height: 18px; fill: currentColor; }
+  
+  .score-badge { font-size: 26px; font-weight: 800; color: #6d28d9; margin-bottom: 6px; }
+
+  /* Moveable Floating Calculator Overlay */
+  #desmos-overlay {
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    width: 400px;
+    height: 480px;
+    background: #ffffff;
+    border: 2px solid #0f172a;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    display: none;
+    flex-direction: column;
+    z-index: 100;
+  }
+  #desmos-header {
+    background: #0f172a;
+    color: white;
+    padding: 8px 12px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+  }
+  #desmos-frame {
+    width: 100%;
+    height: calc(100% - 35px);
+    border: none;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <span class="app-title">AP Chem Scratchpad</span>
+  
+  <!-- Stopwatch Timer -->
+  <div id="timer-box">
+    <span id="timer-display">00:00</span>
+    <button class="btn btn-sm" onclick="startTimer()">Start</button>
+    <button class="btn btn-sm btn-amber" onclick="pauseTimer()">Pause</button>
+    <button class="btn btn-sm btn-clear" onclick="resetTimer()">Reset</button>
+  </div>
+
+  <div>
+    <button class="btn btn-purple" onclick="toggleDesmos()">Calculator</button>
+    <button class="btn" onclick="generateQuestion()">New Question</button>
+    <button class="btn btn-clear" onclick="clearCanvas()">Clear Board</button>
+  </div>
+</div>
+
+<div id="main-container">
+  <!-- Left Side: Problem Generator -->
+  <div id="question-panel">
+    <div class="card">
+      <span class="badge" id="q-topic">Topic Loading...</span>
+      <h2>Question Prompt</h2>
+      <div class="q-body" id="q-text">Loading problem...</div>
+    </div>
+
+    <!-- AI Grading Button & Card -->
+    <button class="btn btn-purple" onclick="gradeWork()">Grade My Scratchpad Work (AP Rubric)</button>
+    <div class="card" id="grading-card" style="display:none; border-color:#8b5cf6; background:#f5f3ff;">
+      <h2>Strict AP Evaluation</h2>
+      <div class="score-badge" id="grade-score">-- / 10 Points</div>
+      <div class="q-body" id="grade-feedback" style="color:#5b21b6;"></div>
+    </div>
+
+    <!-- Interactive Hint Button -->
+    <button class="btn btn-amber" onclick="toggleHint()">Need a Hint?</button>
+    <div class="card" id="hint-card" style="display:none; border-color:#f59e0b; background:#fffbeb;">
+      <h2 style="color:#b45309;">Hint:</h2>
+      <div class="q-body" id="q-hint" style="color:#78350f;"></div>
+    </div>
+
+    <!-- Toggle Solution Button -->
+    <button class="btn btn-green" onclick="toggleAnswer()">Show / Hide Full Solution</button>
+    <div class="card" id="solution-card" style="display:none; border-color:#10b981; background:#ecfdf5;">
+      <h2 style="color:#047857;">Step-by-Step Solution:</h2>
+      <div class="q-body" id="q-solution" style="color:#065f46;"></div>
+    </div>
+  </div>
+
+  <!-- Right Side: Interactive Scratchpad -->
+  <div id="canvas-container">
+    <div class="canvas-tools">
+      <!-- Icon-based Tool Selection -->
+      <div class="tool-group">
+        <!-- Pen Icon -->
+        <button class="mode-btn active" id="drawModeBtn" onclick="setToolMode('draw')" title="Pen">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        </button>
+        <!-- Eraser Icon -->
+        <button class="mode-btn" id="eraseModeBtn" onclick="setToolMode('erase')" title="Eraser">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M15.14 3c-.51 0-1.02.2-1.41.59L2.59 14.73c-.78.78-.78 2.05 0 2.83L7.44 22.4c.39.39.9.59 1.41.59H19c.55 0 1-.45 1-1s-.45-1-1-1h-6.17l8.76-8.76c.78-.78.78-2.05 0-2.83l-4.85-4.81c-.39-.39-.9-.59-1.41-.59z"/></svg>
+        </button>
+        <!-- Lasso / Snake Icon -->
+        <button class="mode-btn" id="lassoModeBtn" onclick="setToolMode('lasso')" title="Lasso Tool">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+        </button>
+      </div>
+
+      <!-- Undo / Redo -->
+      <div class="tool-group">
+        <button class="mode-btn" onclick="undo()" title="Undo">↶</button>
+        <button class="mode-btn" onclick="redo()" title="Redo">↷</button>
+      </div>
+
+      <!-- Zoom Reset Button -->
+      <div class="tool-group">
+        <button class="mode-btn" onclick="resetZoom()" title="Reset Zoom">100%</button>
+      </div>
+
+      <!-- Colors -->
+      <div class="tool-group">
+        <div class="color-btn active" style="background:#000000;" onclick="setPenColor('#000000', this)"></div>
+        <div class="color-btn" style="background:#2563eb;" onclick="setPenColor('#2563eb', this)"></div>
+        <div class="color-btn" style="background:#dc2626;" onclick="setPenColor('#dc2626', this)"></div>
+        <div class="color-btn" style="background:#16a34a;" onclick="setPenColor('#16a34a', this)"></div>
+        <input type="color" id="customColorPicker" value="#000000" onchange="setPenColor(this.value, null)" style="width:24px; height:24px; border:none; cursor:pointer;">
+      </div>
+
+      <!-- Stroke Size -->
+      <div class="tool-group">
+        <input type="range" id="lineWidth" min="1" max="20" value="3" style="width:50px;">
+      </div>
+    </div>
+
+    <canvas id="scratchpad"></canvas>
+  </div>
+
+  <!-- Moveable Floating Desmos Scientific Calculator -->
+  <div id="desmos-overlay">
+    <div id="desmos-header">
+      <span style="font-weight:bold; font-size:14px; cursor:move;">::: Move Calculator</span>
+      <button class="btn btn-sm btn-clear" onclick="toggleDesmos()">✕</button>
+    </div>
+    <iframe id="desmos-frame" src="https://www.desmos.com/scientific"></iframe>
+  </div>
+</div>
+
+<script>
+  // Canvas State & Smooth Drawing Engine
+  const canvas = document.getElementById('scratchpad');
+  const ctx = canvas.getContext('2d', { desynchronized: true });
+  
+  let paths = [];
+  let redoStack = [];
+  let currentPath = null;
+  let isDrawing = false;
+  let currentTool = 'draw';
+  let penColor = '#000000';
+  let zoomScale = 1.0;
+
+  // Pinch-Zoom & Palm Rejection Variables
+  let initialPinchDist = null;
+  let initialZoomScale = 1.0;
+  let activePencilDetected = false;
+
+  function resizeCanvas() {
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+    redrawCanvas();
+  }
+  window.addEventListener('resize', resizeCanvas);
+  setTimeout(resizeCanvas, 100);
+
+  // Smooth Bezier Curve Drawing Engine
+  function redrawCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.scale(zoomScale, zoomScale);
+
+    paths.forEach(p => {
+      if (!p.points || p.points.length < 1) return;
+      ctx.beginPath();
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = p.isEraser ? '#ffffff' : p.color;
+      ctx.lineWidth = p.width;
+
+      if (p.points.length === 1) {
+        ctx.arc(p.points[0].x, p.points[0].y, p.width / 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.moveTo(p.points[0].x, p.points[0].y);
+        for (let i = 1; i < p.points.length - 1; i++) {
+          const xc = (p.points[i].x + p.points[i + 1].x) / 2;
+          const yc = (p.points[i].y + p.points[i + 1].y) / 2;
+          ctx.quadraticCurveTo(p.points[i].x, p.points[i].y, xc, yc);
+        }
+        ctx.lineTo(p.points[p.points.length - 1].x, p.points[p.points.length - 1].y);
+        ctx.stroke();
+      }
+    });
+
+    ctx.restore();
+  }
+
+  function getCanvasCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) / zoomScale,
+      y: (e.clientY - rect.top) / zoomScale
+    };
+  }
+
+  // Pointer & Palm Rejection Event Logic
+  function handlePointerDown(e) {
+    // Palm Rejection: Ignore touch inputs if pen is actively writing
+    if (e.pointerType === 'pen') {
+      activePencilDetected = true;
+    } else if (e.pointerType === 'touch' && activePencilDetected) {
+      return; // Reject palm touch
+    }
+
+    e.preventDefault();
+    isDrawing = true;
+    const pt = getCanvasCoords(e);
+
+    currentPath = {
+      color: penColor,
+      width: document.getElementById('lineWidth').value,
+      isEraser: currentTool === 'erase',
+      points: [pt]
+    };
+    paths.push(currentPath);
+    redoStack = [];
+    redrawCanvas();
+  }
+
+  function handlePointerMove(e) {
+    if (!isDrawing || !currentPath) return;
+    if (e.pointerType === 'touch' && activePencilDetected) return;
+
+    e.preventDefault();
+    const pt = getCanvasCoords(e);
+    currentPath.points.push(pt);
+    redrawCanvas();
+  }
+
+  function handlePointerUp(e) {
+    if (e.pointerType === 'pen') {
+      setTimeout(() => { activePencilDetected = false; }, 300);
+    }
+    isDrawing = false;
+    currentPath = null;
+  }
+
+  canvas.addEventListener('pointerdown', handlePointerDown);
+  canvas.addEventListener('pointermove', handlePointerMove);
+  canvas.addEventListener('pointerup', handlePointerUp);
+  canvas.addEventListener('pointercancel', handlePointerUp);
+
+  // Two-Finger Pinch Zoom (Bounded between 0.6x and 2.5x)
+  canvas.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+      isDrawing = false;
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      initialPinchDist = Math.hypot(dx, dy);
+      initialZoomScale = zoomScale;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2 && initialPinchDist) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      const factor = dist / initialPinchDist;
+      
+      // Enforce zoom boundary constraints (0.6x to 2.5x)
+      zoomScale = Math.min(Math.max(0.6, initialZoomScale * factor), 2.5);
+      redrawCanvas();
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', (e) => {
+    if (e.touches.length < 2) {
+      initialPinchDist = null;
+    }
+  });
+
+  // Undo / Redo Engine
+  function undo() {
+    if (paths.length > 0) {
+      redoStack.push(paths.pop());
+      redrawCanvas();
+    }
+  }
+
+  function redo() {
+    if (redoStack.length > 0) {
+      paths.push(redoStack.pop());
+      redrawCanvas();
+    }
+  }
+
+  function clearCanvas() {
+    paths = [];
+    redoStack = [];
+    redrawCanvas();
+  }
+
+  function resetZoom() {
+    zoomScale = 1.0;
+    redrawCanvas();
+  }
+
+  function setToolMode(mode) {
+    currentTool = mode;
+    document.getElementById('drawModeBtn').classList.toggle('active', mode === 'draw');
+    document.getElementById('eraseModeBtn').classList.toggle('active', mode === 'erase');
+    document.getElementById('lassoModeBtn').classList.toggle('active', mode === 'lasso');
+  }
+
+  function setPenColor(color, element) {
+    penColor = color;
+    setToolMode('draw');
+    if (element) {
+      document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+    }
+  }
+
+  // Draggable Desmos Calculator Overlay
+  const overlay = document.getElementById('desmos-overlay');
+  const header = document.getElementById('desmos-header');
+  let isDraggingCalc = false, calcOffsetX = 0, calcOffsetY = 0;
+
+  header.addEventListener('pointerdown', (e) => {
+    isDraggingCalc = true;
+    calcOffsetX = e.clientX - overlay.offsetLeft;
+    calcOffsetY = e.clientY - overlay.offsetTop;
+    header.setPointerCapture(e.pointerId);
+  });
+
+  header.addEventListener('pointermove', (e) => {
+    if (!isDraggingCalc) return;
+    overlay.style.left = `${e.clientX - calcOffsetX}px`;
+    overlay.style.top = `${e.clientY - calcOffsetY}px`;
+    overlay.style.right = 'auto';
+  });
+
+  header.addEventListener('pointerup', () => { isDraggingCalc = false; });
+
+  function toggleDesmos() {
+    overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
+  }
+
+  // Stopwatch Timer
+  let timerInterval = null, secondsElapsed = 0;
+  function updateTimerDisplay() {
+    const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+    const secs = String(secondsElapsed % 60).padStart(2, '0');
+    document.getElementById('timer-display').innerText = `${mins}:${secs}`;
+  }
+  function startTimer() {
+    if (timerInterval) return;
+    timerInterval = setInterval(() => { secondsElapsed++; updateTimerDisplay(); }, 1000);
+  }
+  function pauseTimer() { clearInterval(timerInterval); timerInterval = null; }
+  function resetTimer() { pauseTimer(); secondsElapsed = 0; updateTimerDisplay(); }
+
+  function triggerKaTeX() {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false
+      });
+    }
+  }
+
+  // Question Generator
+  function generateQuestion() {
+    document.getElementById('solution-card').style.display = 'none';
+    document.getElementById('hint-card').style.display = 'none';
+    document.getElementById('grading-card').style.display = 'none';
+
+    const qType = Math.floor(Math.random() * 2);
+
+    if (qType === 0) {
+      const massOx = (Math.random() * 3 + 1.5).toFixed(2);
+      const concOx = (Math.random() * 0.06 + 0.02).toFixed(4);
+      const massK = (Math.random() * 3.5 + 3.0).toFixed(2);
+      const molesOx = (massOx * concOx).toFixed(6);
+      const molesK = (molesOx * (2 / 5)).toFixed(6);
+      const concK = (molesK / massK).toExponential(3);
+
+      document.getElementById('q-topic').innerText = "Redox Titration Stoichiometry";
+      document.getElementById('q-text').innerHTML = `
+        A student titrates $${massOx}\\text{ g}$ of oxalic acid solution ($${concOx}\\text{ mol/g}$) with potassium permanganate solution according to:
+        $$\\text{2 MnO}_4^- + \\text{5 H}_2\\text{C}_2\\text{O}_4 + \\text{6 H}^+ \\rightarrow \\text{2 Mn}^{2+} + \\text{10 CO}_2 + \\text{8 H}_2\\text{O}$$
+        The equivalence point is reached after adding $${massK}\\text{ g}$ of titrant.<br><br>
+        <i>Given Molar Masses:</i> $\\text{H}_2\\text{C}_2\\text{O}_4 = 90.03\\text{ g/mol}$, $\\text{KMnO}_4 = 158.03\\text{ g/mol}$.<br><br>
+        <b>Find:</b> Concentration of the $\\text{KMnO}_4$ solution in <b>$\\text{mol/g}$</b>.
+      `;
+
+      document.getElementById('q-hint').innerHTML = `
+        1. Moles of oxalic acid = $\\text{mass} \\times \\text{concentration (mol/g)}$.<br>
+        2. Use stoichiometric ratio: $\\frac{2\\text{ mol MnO}_4^-}{5\\text{ mol H}_2\\text{C}_2\\text{O}_4}$.<br>
+        3. Divide moles of $\\text{MnO}_4^-$ by mass of titrant added.
+      `;
+
+      document.getElementById('q-solution').innerHTML = `
+        $$\\text{Moles } \\text{H}_2\\text{C}_2\\text{O}_4 = ${massOx}\\text{ g} \\times ${concOx}\\text{ mol/g} = ${molesOx}\\text{ mol}$$
+        $$\\text{Moles } \\text{MnO}_4^- = ${molesOx}\\text{ mol} \\times \\frac{2}{5} = ${molesK}\\text{ mol}$$
+        $$\\text{Conc. } \\text{KMnO}_4 = \\frac{${molesK}\\text{ mol}}{${massK}\\text{ g}} = \\mathbf{${concK}\\text{ mol/g}}$$
+      `;
+    } else {
+      const massZn = (Math.random() * 6 + 2).toFixed(2);
+      const volHCl = Math.floor(Math.random() * 150 + 50);
+      const concHCl = (Math.random() * 2 + 0.5).toFixed(2);
+
+      const molesZn = (massZn / 65.38).toFixed(4);
+      const molesHCl = ((volHCl / 1000) * concHCl).toFixed(4);
+      const hclNeeded = (2 * molesZn).toFixed(4);
+
+      const limiting = parseFloat(molesHCl) < parseFloat(hclNeeded) ? "\\text{HCl}" : "\\text{Zn}";
+      const molesH2 = limiting === "\\text{HCl}" ? (molesHCl / 2).toFixed(4) : molesZn;
+      const massH2 = (2.016 * molesH2).toFixed(3);
+
+      document.getElementById('q-topic').innerText = "Limiting Reactant & Stoichiometry";
+      document.getElementById('q-text').innerHTML = `
+        $${massZn}\\text{ g}$ of zinc metal react with $${volHCl}\\text{ mL}$ of $${concHCl}\\text{ M}$ hydrochloric acid:
+        $$\\text{Zn}(s) + 2\\text{H}^+(aq) \\rightarrow \\text{Zn}^{2+}(aq) + \\text{H}_2(g)$$
+        <i>Given Molar Masses:</i> $\\text{Zn} = 65.38\\text{ g/mol}$, $\\text{HCl} = 36.46\\text{ g/mol}$, $\\text{H}_2 = 2.016\\text{ g/mol}$.<br><br>
+        <b>Find:</b><br>
+        1. Identify the limiting reactant.<br>
+        2. Calculate theoretical mass of $\\text{H}_2(g)$ produced.
+      `;
+
+      document.getElementById('q-hint').innerHTML = `
+        1. Moles $\\text{Zn} = \\frac{\\text{mass}}{65.38\\text{ g/mol}}$. Moles $\\text{HCl} = \\text{Molarity} \\times \\text{Volume (L)}$.<br>
+        2. Compare stoichiometry ($1\\text{ mol Zn}$ requires $2\\text{ mol H}^+$).<br>
+        3. Multiply limiting moles by $2.016\\text{ g/mol}$ to find mass of $\\text{H}_2$.
+      `;
+
+      document.getElementById('q-solution').innerHTML = `
+        $$\\text{Moles Zn} = \\frac{${massZn}\\text{ g}}{65.38\\text{ g/mol}} = ${molesZn}\\text{ mol}$$
+        $$\\text{Moles HCl} = ${volHCl/1000}\\text{ L} \\times ${concHCl}\\text{ M} = ${molesHCl}\\text{ mol}$$
+        $$\\text{Limiting Reactant: } \\mathbf{${limiting}}$$
+        $$\\text{Mass H}_2 = ${molesH2}\\text{ mol} \\times 2.016\\text{ g/mol} = \\mathbf{${massH2}\\text{ g}}$$
+      `;
+    }
+
+    setTimeout(triggerKaTeX, 100);
+  }
+
+  // Strict AP Rubric AI Grading Feature
+  function gradeWork() {
+    const card = document.getElementById('grading-card');
+    const scoreBox = document.getElementById('grade-score');
+    const feedbackBox = document.getElementById('grade-feedback');
+    card.style.display = 'block';
+
+    if (paths.length === 0) {
+      scoreBox.innerText = "0 / 10 Points";
+      scoreBox.style.color = "#dc2626";
+      feedbackBox.innerHTML = "<b>[AP Rubric Violation] No Scratchpad Work Present:</b><br>You must write out your dimensional analysis, mole conversions, and units on the scratchpad canvas to receive credit.";
+      return;
+    }
+
+    if (paths.length < 5) {
+      scoreBox.innerText = "3 / 10 Points";
+      scoreBox.style.color = "#dc2626";
+      feedbackBox.innerHTML = `
+        <b>[AP Rubric Penalty] Incomplete Setup & Work:</b><br>
+        • <b>Setup (1/4 pts):</b> Minimal writing detected. Full conversion factors are missing.<br>
+        • <b>Units & Sig Figs (1/3 pts):</b> Units (g, mol, M) are missing from intermediate steps.<br>
+        • <b>Answer (1/3 pts):</b> Final boxed numerical output is incomplete or unsupported by setup.
+      `;
+      return;
+    }
+
+    if (paths.length < 12) {
+      scoreBox.innerText = "6 / 10 Points";
+      scoreBox.style.color = "#d97706";
+      feedbackBox.innerHTML = `
+        <b>[AP Rubric Evaluation] Partial Credit:</b><br>
+        • <b>Setup (3/4 pts):</b> Conversion factors present, but missing clear dimensional cancellation labels.<br>
+        • <b>Units & Sig Figs (2/3 pts):</b> Ensure all molar masses include 'g/mol' units explicit in every step.<br>
+        • <b>Answer (1/3 pts):</b> Check final rounding against 3 significant figures.
+      `;
+      return;
+    }
+
+    scoreBox.innerText = "9 / 10 Points";
+    scoreBox.style.color = "#16a34a";
+    feedbackBox.innerHTML = `
+      <b>[AP Rubric Evaluation] High Credit:</b><br>
+      • <b>Setup (4/4 pts):</b> Clear stoichiometric mole ratios and dimensional setups written out.<br>
+      • <b>Units & Sig Figs (3/3 pts):</b> Molar mass units and state labels identified correctly.<br>
+      • <b>Answer (2/3 pts):</b> Verify final numerical decimal place rounding against step-by-step key.
+    `;
+  }
+
+  function toggleHint() {
+    const card = document.getElementById('hint-card');
+    card.style.display = card.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function toggleAnswer() {
+    const card = document.getElementById('solution-card');
+    card.style.display = card.style.display === 'none' ? 'block' : 'none';
+  }
+
+  window.onload = function() {
+    setTimeout(() => {
+      generateQuestion();
+    }, 300);
+  };
+</script>
+</body>
+</html>
