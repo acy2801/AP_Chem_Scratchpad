@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AP Biology Units 1-3 Practice Exam</title>
+    
+    <!-- MATHJAX SCRIPT TO RENDER LATEX MATH FORMULAS -->
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        @page {
+            size: letter;
+            margin: 0.6in;
+        }
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            color: #111;
+            line-height: 1.4;
+            font-size: 10pt;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Palatino', 'Georgia', serif;
+            margin-top: 0;
+            color: #000;
+        }
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+        .header-table td {
+            vertical-align: top;
+            padding: 2px;
+        }
+        .score-box {
+            border: 2px solid #000;
+            border-collapse: collapse;
+            width: 210px;
+            float: right;
+            margin-left: 15px;
+        }
+        .score-box th, .score-box td {
+            border: 1px solid #000;
+            padding: 3px 5px;
+            text-align: center;
+            font-size: 8.5pt;
+        }
+        .score-box th {
+            background-color: #f0f0f0;
+        }
+        .instructions-box {
+            border: 1px solid #444;
+            background-color: #fafafa;
+            padding: 6px 10px;
+            font-size: 8.5pt;
+            margin-bottom: 15px;
+        }
+        .section-header {
+            background-color: #222;
+            color: #fff;
+            padding: 5px 8px;
+            font-size: 11pt;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .question-card {
+            page-break-inside: avoid;
+            margin-bottom: 10px;
+            border-bottom: 1px dotted #ccc;
+            padding-bottom: 8px;
+        }
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .options-list {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 3px 0;
+        }
+        .options-list li {
+            margin-bottom: 2px;
+            padding-left: 18px;
+            text-indent: -18px;
+        }
+        .frq-box {
+            border: 1px solid #000;
+            min-height: 160px;
+            margin-top: 8px;
+            margin-bottom: 12px;
+            background-color: #fff;
+            position: relative;
+        }
+        .frq-box::after {
+            content: "BOX YOUR FINAL ANSWERS WHERE APPLICABLE";
+            position: absolute;
+            bottom: 4px;
+            right: 8px;
+            font-size: 7pt;
+            color: #888;
+            font-family: sans-serif;
+        }
+        .page-footer {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #000;
+            padding-top: 4px;
+            font-size: 8pt;
+            margin-top: 15px;
+        }
+        .graph-container {
+            text-align: center;
+            margin: 10px 0;
+        }
+        @media print {
+            .page-break { page-break-before: always; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER BLOCK -->
+    <table class="header-table">
+        <tr>
+            <td style="width: 58%;">
+                <h1 style="margin: 0; font-size: 16pt;">AP BIOLOGY EXAMINATION</h1>
+                <p style="margin: 2px 0; font-size: 9.5pt;"><strong>Topics:</strong> Unit 1 (Biochemistry), Unit 2 (Cell Structure/Cycle), Unit 3 (Energetics)</p>
+                <p style="margin: 2px 0; font-size: 9.5pt;"><strong>Time Allowed:</strong> 90 Minutes | <strong>Total Marks:</strong> 40 Points</p>
+                <p style="margin: 2px 0; font-size: 9.5pt;"><strong>Full Name:</strong> _____________________________________</p>
+                <p style="margin: 2px 0; font-size: 9.5pt;"><strong>Date / Section:</strong> _________________________________</p>
+            </td>
+            <td>
+                <table class="score-box">
+                    <tr>
+                        <th>Section</th>
+                        <th>Max Points</th>
+                        <th>Score</th>
+                    </tr>
+                    <tr>
+                        <td>Section I (MCQ)</td>
+                        <td>30</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>FRQ 1 (Long - Energetics)</td>
+                        <td>5</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>FRQ 2 (Short - Cell Cycle)</td>
+                        <td>2.5</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>FRQ 3 (Short - Water Pot.)</td>
+                        <td>2.5</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Total</th>
+                        <th>40</th>
+                        <th></th>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <div class="instructions-box">
+        <strong>INSTRUCTIONS:</strong> Show all steps for mathematical calculations. Box your final numerical answers in Section II. Standard scientific or four-function calculators are allowed. Standard formulas: $\Psi = \Psi_s + \Psi_p$, $\Psi_s = -iCRT$, $\text{SA}_{\text{sphere}} = 4\pi r^2$, $\text{V}_{\text{sphere}} = \frac{4}{3}\pi r^3$.
+    </div>
+
+    <!-- SECTION I: MCQs -->
+    <div class="section-header">Section I: Multiple-Choice Questions (30 Questions)</div>
+
+    <!-- UNIT 1 LIGHT (Q1-Q4) -->
+    <div class="question-card">
+        <div class="question-text">1. Which property of water allows it to move upward through vascular plant xylem against gravity?</div>
+        <ul class="options-list">
+            <li>(A) High specific heat preventing temperature rapid shifts</li>
+            <li>(B) Cohesion resulting from hydrogen bonding between adjacent water molecules</li>
+            <li>(C) Low density in its solid ice state compared to liquid water</li>
+            <li>(D) Covalent bonding between water molecules and cell walls</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">2. Which functional group interaction stabilizes the tertiary structure of proteins through covalent bonding?</div>
+        <ul class="options-list">
+            <li>(A) Hydrogen bonds between carboxyl and amino groups</li>
+            <li>(B) Disulfide bridges between cysteine side chains</li>
+            <li>(C) Hydrophobic interactions between nonpolar groups</li>
+            <li>(D) Ionic bonds between positively and negatively charged R-groups</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">3. Which monomeric unit polymerizes to form nucleic acids, and what functional group forms the backbone linkages?</div>
+        <ul class="options-list">
+            <li>(A) Amino acids linked by peptide bonds</li>
+            <li>(B) Monosaccharides linked by glycosidic linkages</li>
+            <li>(C) Nucleotides linked by phosphodiester bonds</li>
+            <li>(D) Fatty acids linked by ester bonds</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">4. What fundamental structural distinction differentiates DNA from RNA?</div>
+        <ul class="options-list">
+            <li>(A) RNA contains a $2'$-hydroxyl group on its ribose sugar; DNA has a $2'$-hydrogen on deoxyribose.</li>
+            <li>(B) DNA uses uracil instead of thymine.</li>
+            <li>(C) RNA is always triple-stranded; DNA is single-stranded.</li>
+            <li>(D) DNA lacks a phosphate group in its sugar-phosphate backbone.</li>
+        </ul>
+    </div>
+
+    <!-- UNIT 2: CELL STRUCTURE & TRANSPORT & CELL CYCLE (Q5-Q16) -->
+    <div class="question-card">
+        <div class="question-text">5. A cell with a radius of $2\,\mu\text{m}$ is compared to a larger cell with a radius of $6\,\mu\text{m}$. Calculate the ratio of the surface area-to-volume ($\text{SA:V}$) ratio of the smaller cell to the larger cell.</div>
+        <ul class="options-list">
+            <li>(A) $1 : 3$</li>
+            <li>(B) $3 : 1$</li>
+            <li>(C) $1 : 9$</li>
+            <li>(D) $9 : 1$</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">6. Calculate the solute potential ($\Psi_s$) of a $0.3\text{ M}$ sucrose solution in an open beaker at $22^\circ\text{C}$ ($295\text{ K}$). (Use $R = 0.0831\text{ L bar/mol K}$, $i = 1$).</div>
+        <ul class="options-list">
+            <li>(A) $-7.35\text{ bar}$</li>
+            <li>(B) $-0.55\text{ bar}$</li>
+            <li>(C) $+7.35\text{ bar}$</li>
+            <li>(D) $-14.70\text{ bar}$</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">7. A plant cell with a solute potential of $-0.8\text{ MPa}$ and pressure potential of $0.2\text{ MPa}$ is placed in an open beaker with a solute potential of $-0.3\text{ MPa}$. What is the net direction of water flow?</div>
+        <ul class="options-list">
+            <li>(A) Into the cell because $\Psi_{\text{cell}} = -0.6\text{ MPa}$ and $\Psi_{\text{solution}} = -0.3\text{ MPa}$</li>
+            <li>(B) Out of the cell because $\Psi_{\text{cell}} = -1.0\text{ MPa}$ and $\Psi_{\text{solution}} = -0.3\text{ MPa}$</li>
+            <li>(C) No net movement because the system is at equilibrium</li>
+            <li>(D) Into the cell because $\Psi_{\text{cell}} = -0.3\text{ MPa}$ and $\Psi_{\text{solution}} = -0.6\text{ MPa}$</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">8. Which cellular organelle contains hydrolytic enzymes responsible for intracellular digestion and recycling damaged organelles?</div>
+        <ul class="options-list">
+            <li>(A) Peroxisome</li>
+            <li>(B) Lysosome</li>
+            <li>(C) Golgi apparatus</li>
+            <li>(D) Rough Endoplasmic Reticulum</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">9. Which organelle is primarily responsible for lipid synthesis, carbohydrate metabolism, and drug detoxification in liver cells?</div>
+        <ul class="options-list">
+            <li>(A) Rough Endoplasmic Reticulum</li>
+            <li>(B) Smooth Endoplasmic Reticulum</li>
+            <li>(C) Nucleolus</li>
+            <li>(D) Ribosome</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">10. How does cholesterol maintain plasma membrane fluidity at varying temperatures in animal cells?</div>
+        <ul class="options-list">
+            <li>(A) It permanently solidifies the lipid bilayer at high temperatures.</li>
+            <li>(B) It hinders phospholipid packing at low temperatures and restricts movement at high temperatures.</li>
+            <li>(C) It increases membrane permeability to polar molecules at low temperatures.</li>
+            <li>(D) It actively pumps ions across the lipid bilayer.</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">11. In an experiment, 100 cells in a culture are examined during interphase and mitosis. If 80 cells are in interphase, 10 in prophase, 4 in metaphase, 4 in anaphase, and 2 in telophase, and the total cell cycle length is 20 hours, estimate the time spent in metaphase.</div>
+        <ul class="options-list">
+            <li>(A) 0.8 hours (48 minutes)</li>
+            <li>(B) 1.6 hours (96 minutes)</li>
+            <li>(C) 2.0 hours (120 minutes)</li>
+            <li>(D) 4.0 hours (240 minutes)</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">12. Which event occurs during the $S$ phase of the eukaryotic cell cycle?</div>
+        <ul class="options-list">
+            <li>(A) Separation of sister chromatids</li>
+            <li>(B) Replication of nuclear DNA</li>
+            <li>(C) Breakdown of the nuclear envelope</li>
+            <li>(D) Cytokinesis via cleavage furrow formation</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">13. What directly causes the activation of Cyclin-Dependent Kinases (CDKs) to propel the cell past the G2/M checkpoint?</div>
+        <ul class="options-list">
+            <li>(A) Degradation of ATP</li>
+            <li>(B) Binding of cyclin proteins whose concentration accumulates during G2</li>
+            <li>(C) Phosphorylation of DNA polymerase</li>
+            <li>(D) Dephosphorylation of histone proteins</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">14. What occurs during Anaphase of mitosis?</div>
+        <ul class="options-list">
+            <li>(A) Chromosomes align at the metaphase plate.</li>
+            <li>(B) Sister chromatids separate and move toward opposite poles.</li>
+            <li>(C) Nuclear membrane reforms around chromatin.</li>
+            <li>(D) Chromatin condenses into visible chromosomes.</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">15. Cancer cells often bypass the G1 checkpoint (restriction point) due to which of the following molecular alterations?</div>
+        <ul class="options-list">
+            <li>(A) Overexpression of tumor suppressor gene $p53$</li>
+            <li>(B) Loss-of-function mutation in proteins that inhibit CDK-cyclin complexes</li>
+            <li>(C) Inability to synthesize ATP</li>
+            <li>(D) Continuous activation of apoptosis pathways</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">16. Which transport mechanism moves sodium ions ($\text{Na}^+$) out of the cell and potassium ions ($\text{K}^+$) into the cell against their electrochemical gradients?</div>
+        <ul class="options-list">
+            <li>(A) Simple diffusion</li>
+            <li>(B) Facilitated diffusion through ion channels</li>
+            <li>(C) Primary active transport via the $\text{Na}^+/\text{K}^+$ ATPase pump</li>
+            <li>(D) Osmosis</li>
+        </ul>
+    </div>
+
+    <!-- UNIT 3: CELLULAR ENERGETICS (Q17-Q30) -->
+    <div class="question-card">
+        <div class="question-text">17. An enzyme catalyzes a reaction converting $15\text{ mg}$ of substrate into product in 5 minutes. Calculate the rate of reaction in $\mu\text{g/sec}$.</div>
+        <ul class="options-list">
+            <li>(A) $3.0\,\mu\text{g/sec}$</li>
+            <li>(B) $50.0\,\mu\text{g/sec}$</li>
+            <li>(C) $300.0\,\mu\text{g/sec}$</li>
+            <li>(D) $3000.0\,\mu\text{g/sec}$</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">18. An enzyme's activity was measured at $25^\circ\text{C}$ ($1.2\text{ mmol/min}$) and $35^\circ\text{C}$ ($2.4\text{ mmol/min}$). Calculate the $Q_{10}$ temperature coefficient for this enzyme. ($Q_{10} = (R_2/R_1)^{10/(T_2-T_1)}$).</div>
+        <ul class="options-list">
+            <li>(A) 1.5</li>
+            <li>(B) 2.0</li>
+            <li>(C) 2.5</li>
+            <li>(D) 3.0</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">19. How does a competitive inhibitor alter enzyme kinetics?</div>
+        <ul class="options-list">
+            <li>(A) Decreases $V_{\text{max}}$ without changing $K_m$</li>
+            <li>(B) Binds allosterically, preventing substrate binding permanently</li>
+            <li>(C) Binds to the active site, increasing apparent $K_m$ while $V_{\text{max}}$ can still be reached at high substrate concentration</li>
+            <li>(D) Irreversibly denatures the tertiary structure of the enzyme</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">20. Which statement accurately describes the second law of thermodynamics in biological systems?</div>
+        <ul class="options-list">
+            <li>(A) Energy cannot be created or destroyed.</li>
+            <li>(B) Every energy transfer increases the total entropy (disorder) of the universe.</li>
+            <li>(C) Organisms are closed systems that do not exchange energy with their environment.</li>
+            <li>(D) Anabolic reactions decrease overall universal entropy without heat production.</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">21. What is the ultimate source of electrons that replaces those excited and lost from Photosystem II ($P680$) during light-dependent reactions?</div>
+        <ul class="options-list">
+            <li>(A) Carbon dioxide ($\text{CO}_2$)</li>
+            <li>(B) Water ($\text{H}_2\text{O}$)</li>
+            <li>(C) NADPH</li>
+            <li>(D) Glucose</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">22. Where do the light-independent reactions (Calvin Cycle) of photosynthesis occur in eukaryotic autotrophs?</div>
+        <ul class="options-list">
+            <li>(A) Thylakoid lumen</li>
+            <li>(B) Thylakoid membrane</li>
+            <li>(C) Stroma of the chloroplast</li>
+            <li>(D) Outer chloroplast membrane</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">23. What primary products of the light-dependent reactions are consumed by the Calvin Cycle to reduce $3$-phosphoglycerate into G3P?</div>
+        <ul class="options-list">
+            <li>(A) $\text{O}_2$ and ATP</li>
+            <li>(B) ATP and NADPH</li>
+            <li>(C) $\text{CO}_2$ and $\text{H}_2\text{O}$</li>
+            <li>(D) $\text{NADP}^+$ and ADP</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">24. What directly drives ATP synthesis via ATP synthase during oxidative phosphorylation in mitochondria?</div>
+        <ul class="options-list">
+            <li>(A) Direct transfer of phosphate from pyruvate to ADP</li>
+            <li>(B) Proton flow down its electrochemical gradient from intermembrane space to matrix</li>
+            <li>(C) Oxidation of glucose directly in the mitochondrial matrix</li>
+            <li>(D) Absorption of light photons by cytochrome complexes</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">25. In aerobic cellular respiration, which process yields the majority of ATP per molecule of oxidized glucose?</div>
+        <ul class="options-list">
+            <li>(A) Glycolysis</li>
+            <li>(B) Pyruvate oxidation</li>
+            <li>(C) Citric Acid (Krebs) Cycle</li>
+            <li>(D) Oxidative Phosphorylation (ETC + Chemiosmosis)</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">26. What is the net metabolic yield of glycolysis per molecule of glucose?</div>
+        <ul class="options-list">
+            <li>(A) $2\text{ Pyruvate}, 2\text{ ATP (net)}, 2\text{ NADH}$</li>
+            <li>(B) $2\text{ Acetyl-CoA}, 4\text{ ATP}, 2\text{ FADH}_2$</li>
+            <li>(C) $1\text{ Pyruvate}, 32\text{ ATP}, 6\text{ NADH}$</li>
+            <li>(D) $2\text{ Lactate}, 36\text{ ATP}, 0\text{ NADH}$</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">27. What function does fermentation serve in animal muscle cells under anaerobic conditions?</div>
+        <ul class="options-list">
+            <li>(A) Generates large amounts of additional ATP via substrate-level phosphorylation</li>
+            <li>(B) Regenerates $\text{NAD}^+$ from $\text{NADH}$ to allow glycolysis to continue</li>
+            <li>(C) Converts lactate back into oxygen for mitochondrial respiration</li>
+            <li>(D) Produces ethanol and $\text{CO}_2$ to maintain cytosolic pH</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">28. Which mitochondrial location accumulates protons ($\text{H}^+$) to form the high electrochemical gradient during electron transport chain operation?</div>
+        <ul class="options-list">
+            <li>(A) Mitochondrial matrix</li>
+            <li>(B) Intermembrane space</li>
+            <li>(C) Outer mitochondrial membrane</li>
+            <li>(D) Cytosol</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">29. An chemical compound acts as an uncoupler of oxidative phosphorylation by carrying protons across the inner mitochondrial membrane. What effect will this have on ATP synthesis and oxygen consumption?</div>
+        <ul class="options-list">
+            <li>(A) Both ATP synthesis and oxygen consumption will increase.</li>
+            <li>(B) ATP synthesis decreases while oxygen consumption continues/increases, producing heat.</li>
+            <li>(C) ATP synthesis increases while oxygen consumption stops.</li>
+            <li>(D) Both ATP synthesis and oxygen consumption completely stop immediately.</li>
+        </ul>
+    </div>
+
+    <div class="question-card">
+        <div class="question-text">30. Rubisco (Ribulose-1,5-bisphosphate carboxylase-oxygenase) can catalyze a wasteful side reaction with oxygen ($\text{O}_2$) instead of $\text{CO}_2$. What is this process called?</div>
+        <ul class="options-list">
+            <li>(A) Cyclic photophosphorylation</li>
+            <li>(B) Photorespiration</li>
+            <li>(C) Lactic acid fermentation</li>
+            <li>(D) Oxidative decarboxylation</li>
+        </ul>
+    </div>
+
+    <!-- SECTION II: FRQ -->
+    <div class="page-break"></div>
+    <div class="section-header">Section II: Free-Response Questions (3 Questions)</div>
+
+    <!-- LONG FRQ 1 -->
+    <div style="page-break-inside: avoid;">
+        <h3>Question 1 (Long FRQ - Cellular Energetics - 5 Points)</h3>
+        <p>Researchers investigated the rate of oxygen consumption ($\mu\text{L O}_2/\text{g/hr}$) in two strains of yeast—Wild Type (WT) and Mutant (<i>mut-1</i>)—at three incubation temperatures ($20^\circ\text{C}$, $30^\circ\text{C}$, and $40^\circ\text{C}$). Mean rates and $95\%$ confidence intervals ($\pm 2\text{ SE}_{\overline{x}}$) were calculated and plotted below:</p>
+
+        <table style="width: 80%; margin: 8px auto; border-collapse: collapse; border: 1px solid #000; text-align: center; font-size: 9pt;">
+            <thead>
+                <tr style="background-color: #eee;">
+                    <th style="border: 1px solid #000; padding: 4px;">Yeast Strain</th>
+                    <th style="border: 1px solid #000; padding: 4px;">$20^\circ\text{C}$ Rate ($\pm 2\text{ SE}$)</th>
+                    <th style="border: 1px solid #000; padding: 4px;">$30^\circ\text{C}$ Rate ($\pm 2\text{ SE}$)</th>
+                    <th style="border: 1px solid #000; padding: 4px;">$40^\circ\text{C}$ Rate ($\pm 2\text{ SE}$)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 1px solid #000; padding: 4px;">Wild Type (WT)</td>
+                    <td style="border: 1px solid #000; padding: 4px;">$12 \pm 2$</td>
+                    <td style="border: 1px solid #000; padding: 4px;">$28 \pm 3$</td>
+                    <td style="border: 1px solid #000; padding: 4px;">$35 \pm 2$</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #000; padding: 4px;">Mutant (<i>mut-1</i>)</td>
+                    <td style="border: 1px solid #000; padding: 4px;">$11 \pm 2$</td>
+                    <td style="border: 1px solid #000; padding: 4px;">$27 \pm 2$</td>
+                    <td style="border: 1px solid #000; padding: 4px;">$14 \pm 3$</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- GRAPH WITH ERROR BARS -->
+        <div class="graph-container">
+            <svg width="440" height="220" viewBox="0 0 440 220" style="background: #fff; border: 1px solid #aaa;">
+                <!-- Axes -->
+                <line x1="50" y1="180" x2="410" y2="180" stroke="#000" stroke-width="2"/>
+                <line x1="50" y1="20" x2="50" y2="180" stroke="#000" stroke-width="2"/>
+                
+                <!-- Y-Axis Labels -->
+                <text x="42" y="184" font-size="9" text-anchor="end">0</text>
+                <text x="42" y="144" font-size="9" text-anchor="end">10</text>
+                <text x="42" y="104" font-size="9" text-anchor="end">20</text>
+                <text x="42" y="64" font-size="9" text-anchor="end">30</text>
+                <text x="42" y="24" font-size="9" text-anchor="end">40</text>
+                <text x="15" y="100" font-size="9" transform="rotate(-90 15,100)" text-anchor="middle">O₂ Consumption (µL/g/hr)</text>
+
+                <!-- Grid lines -->
+                <line x1="50" y1="140" x2="410" y2="140" stroke="#ddd" stroke-dasharray="2"/>
+                <line x1="50" y1="100" x2="410" y2="100" stroke="#ddd" stroke-dasharray="2"/>
+                <line x1="50" y1="60" x2="410" y2="60" stroke="#ddd" stroke-dasharray="2"/>
+
+                <!-- X-Axis Labels -->
+                <text x="110" y="196" font-size="9" text-anchor="middle">20°C</text>
+                <text x="220" y="196" font-size="9" text-anchor="middle">30°C</text>
+                <text x="330" y="196" font-size="9" text-anchor="middle">40°C</text>
+                <text x="220" y="212" font-size="9" text-anchor="middle" font-weight="bold">Temperature (°C)</text>
+
+                <!-- 20C WT -->
+                <rect x="90" y="132" width="18" height="48" fill="#444"/>
+                <line x1="99" y1="124" x2="99" y2="140" stroke="#000" stroke-width="1.5"/>
+                <line x1="94" y1="124" x2="104" y2="124" stroke="#000" stroke-width="1.5"/>
+                <line x1="94" y1="140" x2="104" y2="140" stroke="#000" stroke-width="1.5"/>
+
+                <!-- 20C mut-1 -->
+                <rect x="112" y="136" width="18" height="44" fill="#aaa"/>
+                <line x1="121" y1="128" x2="121" y2="144" stroke="#000" stroke-width="1.5"/>
+                <line x1="116" y1="128" x2="126" y2="128" stroke="#000" stroke-width="1.5"/>
+                <line x1="116" y1="144" x2="126" y2="144" stroke="#000" stroke-width="1.5"/>
+
+                <!-- 30C WT -->
+                <rect x="200" y="68" width="18" height="112" fill="#444"/>
+                <line x1="209" y1="56" x2="209" y2="80" stroke="#000" stroke-width="1.5"/>
+                <line x1="204" y1="56" x2="214" y2="56" stroke="#000" stroke-width="1.5"/>
+                <line x1="204" y1="80" x2="214" y2="80" stroke="#000" stroke-width="1.5"/>
+
+                <!-- 30C mut-1 -->
+                <rect x="222" y="72" width="18" height="108" fill="#aaa"/>
+                <line x1="231" y1="64" x2="231" y2="80" stroke="#000" stroke-width="1.5"/>
+                <line x1="226" y1="64" x2="236" y2="64" stroke="#000" stroke-width="1.5"/>
+                <line x1="226" y1="80" x2="236" y2="80" stroke="#000" stroke-width="1.5"/>
+
+                <!-- 40C WT -->
+                <rect x="310" y="40" width="18" height="140" fill="#444"/>
+                <line x1="319" y1="32" x2="319" y2="48" stroke="#000" stroke-width="1.5"/>
+                <line x1="314" y1="32" x2="324" y2="32" stroke="#000" stroke-width="1.5"/>
+                <line x1="314" y1="48" x2="324" y2="48" stroke="#000" stroke-width="1.5"/>
+
+                <!-- 40C mut-1 -->
+                <rect x="332" y="124" width="18" height="56" fill="#aaa"/>
+                <line x1="341" y1="112" x2="341" y2="136" stroke="#000" stroke-width="1.5"/>
+                <line x1="336" y1="112" x2="346" y2="112" stroke="#000" stroke-width="1.5"/>
+                <line x1="336" y1="136" x2="346" y2="136" stroke="#000" stroke-width="1.5"/>
+
+                <!-- Legend -->
+                <rect x="270" y="22" width="10" height="10" fill="#444"/>
+                <text x="285" y="30" font-size="8.5">Wild Type (WT)</text>
+                <rect x="270" y="36" width="10" height="10" fill="#aaa"/>
+                <text x="285" y="44" font-size="8.5">Mutant (mut-1)</text>
+            </svg>
+        </div>
+
+        <p><strong>(a)</strong> [1 pt] Identify the independent and dependent variables in this study.</p>
+        <p><strong>(b)</strong> [1 pt] Based on the sample error bars ($\pm 2\text{ SE}$), determine if there is a statistically significant difference in respiration rate between WT and <i>mut-1</i> at $30^\circ\text{C}$. Justify your claim.</p>
+        <p><strong>(c)</strong> [2 pts] Compare the trend of oxygen consumption for WT and <i>mut-1</i> between $30^\circ\text{C}$ and $40^\circ\text{C}$. Propose a molecular/structural reason for the sharp decline observed in <i>mut-1</i> at $40^\circ\text{C}$.</p>
+        <p><strong>(d)</strong> [1 pt] Predict the effect of $40^\circ\text{C}$ incubation on the rate of ATP production via chemiosmosis in <i>mut-1</i> compared to WT.</p>
+
+        <div class="frq-box"></div>
+    </div>
+
+    <!-- SHORT FRQ 2 -->
+    <div style="page-break-inside: avoid; margin-top: 20px;">
+        <h3>Question 2 (Short FRQ - Cell Cycle & Cancer - 2.5 Points)</h3>
+        <p>A researcher treats a culture of human epithelial cells with Compound X, a drug suspected of inhibiting cell division. The proportion of cells in each phase of the cell cycle is quantified before and after treatment:</p>
+        <ul>
+            <li><strong>Control:</strong> $G1 = 50\%$, $S = 30\%$, $G2 = 12\%$, $M = 8\%$</li>
+            <li><strong>Compound X Treated:</strong> $G1 = 5\%$, $S = 5\%$, $G2 = 85\%$, $M = 5\%$</li>
+        </ul>
+        <p><strong>(a)</strong> [1 pt] Identify the specific cell cycle phase or checkpoint where Compound X arrests cell cycle progression.</p>
+        <p><strong>(b)</strong> [1.5 pts] Describe how Cyclin B and CDK1 (MPF complex) function at this checkpoint, and predict how Compound X affects MPF activity or formation.</p>
+
+        <div class="frq-box"></div>
+    </div>
+
+    <!-- SHORT FRQ 3 -->
+    <div style="page-break-inside: avoid; margin-top: 20px;">
+        <h3>Question 3 (Short FRQ - Transport & Water Potential - 2.5 Points)</h3>
+        <p>A plant cell with an internal solute concentration equivalent to $0.4\text{ M}$ glucose is placed in an open beaker containing a $0.1\text{ M}$ glucose solution at $20^\circ\text{C}$. The plant cell has an initial turgor pressure ($\Psi_p$) of $0.3\text{ MPa}$. (Assume $1\text{ MPa} = 10\text{ bar}$).</p>
+        <p><strong>(a)</strong> [1 pt] Calculate the solute potential ($\Psi_s$) of the $0.1\text{ M}$ beaker solution. Box your final numerical answer.</p>
+        <p><strong>(b)</strong> [1.5 pts] Predict the direction of net water movement across the plasma membrane and justify your prediction using water potential values.</p>
+
+        <div class="frq-box"></div>
+    </div>
+
+    <div class="page-footer">
+        <span>AP Biology Practice Exam (Units 1-3)</span>
+        <span>Page 2 of 2</span>
+    </div>
+
+</body>
+</html>
